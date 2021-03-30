@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>  
+  <script>
+    let activeEffect
+
+    class Dep {
+      constructor(value) {
+        this._value = value
+        // 保存有訂閱這個依賴的訂閱者，好讓 notify 通知
+        this.subscriber = new Set()
+      }
+      get value() {
+        this.depend()
+        return this._value
+      }
+      set value(newValue) {
+        this._value = newValue
+        this.notify()
+      }
+      depend() {
+        if (activeEffect) {
+          this.subscriber.add(activeEffect)
+        }
+      }
+
+      notify() {
+        this.subscriber.forEach(effect => {
+          effect()
+        })
+      }
+    }
+
+    function watchEffect(effect) {
+      activeEffect = effect
+      effect()
+      activeEffect = null
+    }
+
+    const dep = new Dep('Hello')
+
+    watchEffect(() => {
+      // dep.depend()
+      console.log(dep.value)
+    })
+
+    dep.value = 'Changed'
+    // 依賴改變時通知
+    // dep.notify() // effect run
+  </script>
+</body>
+</html>
